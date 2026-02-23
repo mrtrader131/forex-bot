@@ -1,6 +1,6 @@
 export default async function handler(req, res) {
   try {
-    const API_KEY = "তোমার_API_KEY_এখানে";275ef6d202-8c3ae13696-taure7
+    const API_KEY = "তোমার_API_KEY_এখানে";49675354f4-29d44dd6b1-taurjk
     const { from, to } = req.query;
 
     const response = await fetch(
