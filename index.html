@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Forex Signal Bot</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+body{
+background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+color:white;
+text-align:center;
+font-family:Arial;
+}
+h1{margin-top:20px;}
+select,button{
+padding:8px;
+margin:5px;
+font-size:16px;
+border-radius:6px;
+border:none;
+}
+button{
+background:#00c853;
+color:white;
+cursor:pointer;
+}
+#signal{
+font-size:60px;
+margin:20px;
+padding:10px 20px;
+border-radius:15px;
+transition:0.4s;
+}
+.buy{background:#00ff00;color:black;}
+.sell{background:#ff0000;color:white;}
+.neutral{background:#ffff00;color:black;}
+canvas{
+background:rgba(0,0,0,0.3);
+border-radius:15px;
+margin-top:20px;
+}
+</style>
+</head>
+<body>
+
+<h1>Forex Live Signal Bot</h1>
+
+<select id="market">
+<option value="EURUSD">EUR/USD</option>
+<option value="USDJPY">USD/JPY</option>
+<option value="GBPUSD">GBP/USD</option>
+</select>
+
+<select id="timeframe">
+<option value="1">1 Minute</option>
+<option value="5">5 Minute</option>
+<option value="15">15 Minute</option>
+</select>
+
+<button onclick="getSignal()">Get Signal</button>
+
+<div id="signal" class="neutral">Waiting...</div>
+
+<canvas id="chart" width="900" height="400"></canvas>
+
+<script>
+let previousPrice=null;
+let labels=[];
+let prices=[];
+
+const ctx=document.getElementById("chart").getContext("2d");
+const chart=new Chart(ctx,{
+type:"line",
+data:{
+labels:labels,
+datasets:[{
+label:"Price",
+data:prices,
+borderColor:"#00ff00",
+backgroundColor:"rgba(0,255,0,0.2)",
+fill:true,
+tension:0.3
+}]
+}
+});
+
+async function getSignal(){
+const market=document.getElementById("market").value;
+const from=market.slice(0,3);
+const to=market.slice(3);
+
+const res=await fetch(/api/price?from=${from}&to=${to});
+const data=await res.json();
+
+const price=data.result[to];
+
+let signal="NEUTRAL";
+let className="neutral";
+
+if(previousPrice!==null){
+if(price>previousPrice){signal="BUY";className="buy";}
+else if(price<previousPrice){signal="SELL";className="sell";}
+}
+
+previousPrice=price;
+
+document.getElementById("signal").innerText=signal;
+document.getElementById("signal").className=className;
+
+labels.push(new Date().toLocaleTimeString());
+prices.push(price);
+
+if(labels.length>30){labels.shift();prices.shift();}
+chart.update();
+}
+</script>
+
+</body>
+</html>
